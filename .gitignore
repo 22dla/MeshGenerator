@@ -1,0 +1,10 @@
+*.exe
+*.png
+*.docx
+*.dwf
+*.mod
+*.pdb
+*.xlsx
+data/
+build/
+install/
