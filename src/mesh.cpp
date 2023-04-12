@@ -1,6 +1,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <cmath>
 #include <mesh.h>
 
 using namespace std;
