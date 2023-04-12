@@ -43,7 +43,7 @@ std::vector<Vec3*> FileManager::read_input_file(const std::string& filename) {
 	return points;
 }
 
-void FileManager::write_output_file(const std::string& filename, 
+void FileManager::write_output_file(const std::string& filename,
 	const std::vector<Vec3*>& points,
 	const std::vector<std::tuple<int, int, int>>& facets) {
 	std::ofstream outfile(filename);
@@ -66,9 +66,9 @@ void FileManager::write_output_file(const std::string& filename,
 	for (std::size_t i = 0; i < facets.size(); ++i) {
 		const auto facet = facets[i];
 		outfile << std::setw(5) << i + 1 << ",";
-		outfile << std::setw(12) << std::get<0>(facet) << ",";
-		outfile << std::setw(12) << std::get<1>(facet) << ",";
-		outfile << std::setw(12) << std::get<2>(facet) << "\n";
+		outfile << std::setw(12) << std::get<0>(facet) + 1 << ",";
+		outfile << std::setw(12) << std::get<1>(facet) + 1 << ",";
+		outfile << std::setw(12) << std::get<2>(facet) + 1 << "\n";
 	}
 	std::cout << "Wrote " << facets.size() << " triangles to " << filename << std::endl;
 }
