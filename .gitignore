@@ -5,6 +5,7 @@
 *.mod
 *.pdb
 *.xlsx
+*.rar
 data/
 build/
 install/

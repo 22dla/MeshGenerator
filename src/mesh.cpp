@@ -2,6 +2,7 @@
 #include <tuple>
 #include <vector>
 #include <cmath>
+#include <limits>
 #include <mesh.h>
 
 using namespace std;
