@@ -14,6 +14,7 @@ public:
     /* Writes facets to a file. */
     static void write_output_file(
         const std::string& filename, 
+        const std::vector<Vec3*>& points,
         const std::vector<std::tuple<int, int, int>>& facets);
 
     /* Writes points and facets to a obj file. */

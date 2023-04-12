@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
 	auto facets = mesh.GetFacets();
 
 	// Write output file
-	file_manager.write_output_file(output_file, facets);
+	file_manager.write_output_file(output_file, points, facets);
 	//file_manager.write_obj("test.obj", points, facets);
 
 	return 0;

@@ -44,12 +44,22 @@ std::vector<Vec3*> FileManager::read_input_file(const std::string& filename) {
 }
 
 void FileManager::write_output_file(const std::string& filename, 
+	const std::vector<Vec3*>& points,
 	const std::vector<std::tuple<int, int, int>>& facets) {
 	std::ofstream outfile(filename);
 	if (!outfile) {
 		throw std::runtime_error("Could not open file: " + filename);
 	} else {
 		std::cout << "Writing into file: " << filename << std::endl;
+	}
+	outfile << "*   N,            X             Y             Z\n";
+	outfile << "* Nodes\n";
+	for (std::size_t i = 0; i < points.size(); ++i) {
+		const auto& point = points[i];
+		outfile << std::setw(5) << i + 1 << ",";
+		outfile << std::setw(12) << point->X << ",";
+		outfile << std::setw(12) << point->Y << ",";
+		outfile << std::setw(12) << point->Z << "\n";
 	}
 
 	outfile << "*Elements\n";
