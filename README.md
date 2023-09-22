@@ -23,13 +23,13 @@ To use MeshGenerator, follow these steps:
    make
    make install   
 3. Or you can use Cmake GUI:
-![Alt text](data/image.png)
+![image](https://github.com/22dla/MeshGenerator/assets/39338008/0638f8a0-b305-4b12-8552-a5fd3cdc9169)
 
 4. Run MeshGenerator, specifying the input and output files:
 
    ```shell
     ./MeshGenerator -i input.xyz -o output.xyz
-    ```
+   ```
 Where input.xyz is your input data file, and output.xyz is the name of the file where the generated mesh will be saved.
 
 ## Dependencies
