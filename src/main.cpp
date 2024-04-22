@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
 
 	// Create mesh
 	Mesh mesh = Mesh(points);
-	auto facets = mesh.GetFacets();
+	const auto& facets = mesh.GetFacets();
 
 	// Write output file
 	file_manager.write_output_file(output_file, points, facets);

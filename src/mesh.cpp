@@ -7,7 +7,7 @@
 
 using namespace std;
 
-Mesh::Mesh(std::vector<Vec3*> points)
+Mesh::Mesh(const std::vector<Vec3*>& points)
 	: Mesh() {
 	_Facets = GetTriangulationResult(points);
 }
@@ -21,48 +21,34 @@ Mesh::Mesh() {
 			true
 		);
 	}
-
-	_ProjectedPoints = new vector<Vec3*>();
-	_Mesh = new vector<Triangle*>();
 }
 
 Mesh::~Mesh() {
 	for (int i = 0; i < 6; i++) {
 		delete _SupportingPoints[i];
 	}
-
-	for (auto it = _ProjectedPoints->begin(); it != _ProjectedPoints->end(); ++it) {
-		delete* it;
-	}
-
-	for (auto it = _Mesh->begin(); it != _Mesh->end(); ++it) {
-		delete* it;
-	}
-
-	delete _ProjectedPoints;
-	delete _Mesh;
 }
 
-std::vector<std::tuple<int, int, int>> Mesh::GetFacets() {
+const std::vector<std::tuple<int, int, int>>& Mesh::GetFacets() {
 	return this->_Facets;
 }
 
-vector<tuple<int, int, int>> Mesh::GetTriangulationResult(vector<Vec3*>& points) {
-	_ProjectedPoints->reserve(points.size());
+vector<tuple<int, int, int>> Mesh::GetTriangulationResult(const vector<Vec3*>& points) {
+	_ProjectedPoints.reserve(points.size());
 
 	// N random points can form 8+(N-6)*2 triangles based on the algorithm
-	_Mesh->reserve(8 + (points.size() - 6) * 2);
+	_Mesh.reserve(8 + (points.size() - 6) * 2);
 
 	// project points to an unit shpere for triangulation
 	for (auto it = points.begin(); it != points.end(); ++it) {
 		Vec3* projectedPoint = new Vec3((*it), 1);
-		_ProjectedPoints->push_back(projectedPoint);
+		_ProjectedPoints.push_back(projectedPoint);
 	}
 
 	// prepare initial convex hull with 6 vertices and 8 triangle faces
 	ConstructConvexHull(_ProjectedPoints);
 
-	for (auto it = _ProjectedPoints->begin(); it != _ProjectedPoints->end(); ++it) {
+	for (auto it = _ProjectedPoints.begin(); it != _ProjectedPoints.end(); ++it) {
 		auto point = *it;
 		if (!point->IsVisited) {
 			AddPointToHull(point);
@@ -72,18 +58,18 @@ vector<tuple<int, int, int>> Mesh::GetTriangulationResult(vector<Vec3*>& points)
 	RemoveUnnecessaryTriangles();
 
 	vector<tuple<int, int, int>> mesh = vector<tuple<int, int, int>>();
-	for (auto it = _Mesh->begin(); it != _Mesh->end(); it++) {
+	for (auto it = _Mesh.begin(); it != _Mesh.end(); it++) {
 		Triangle* triangle = *it;
 		mesh.push_back(tuple<int, int, int>(
 			triangle->Points[0]->Id,
 			triangle->Points[1]->Id,
 			triangle->Points[2]->Id
-			));
+		));
 	}
 	return mesh;
 }
 
-void Mesh::ConstructConvexHull(vector<Vec3*>* points) {
+void Mesh::ConstructConvexHull(const vector<Vec3*>& points) {
 	std::vector<Vec3*> initialPoints(6);
 	std::vector <Triangle*> initialHullFaces(8);
 
@@ -93,7 +79,7 @@ void Mesh::ConstructConvexHull(vector<Vec3*>* points) {
 
 	// if close enough, use input points to replace auxiliary points so won't be removed in the end
 	std::vector<double> minDistance(initialPoints.size(), 0.0);
-	for (auto it = points->begin(); it != points->end(); ++it) {
+	for (auto it = points.begin(); it != points.end(); ++it) {
 		std::vector<double> distance(initialPoints.size());
 		for (int i = 0; i < distance.size(); ++i) {
 			distance[i] = ComputeVectorDistance(*_SupportingPoints[i], **it);
@@ -121,7 +107,7 @@ void Mesh::ConstructConvexHull(vector<Vec3*>* points) {
 		Triangle* triangle = new Triangle(v0, v1, v2);
 		initialHullFaces[i] = triangle;
 
-		_Mesh->push_back(triangle);
+		_Mesh.push_back(triangle);
 	}
 
 	int neighbor0Index[] = { 1, 2, 3, 0, 7, 4, 5, 6 };
@@ -144,10 +130,10 @@ void Mesh::ConstructConvexHull(vector<Vec3*>* points) {
 void Mesh::AddPointToHull(Vec3* point) {
 	std::vector<double> det = { 0, 0, 0 };
 
-	auto it = _Mesh->begin();
+	auto it = _Mesh.begin();
 	Triangle* triangle = *it;
 
-	while (it != _Mesh->end()) {
+	while (it != _Mesh.end()) {
 		det[0] = CalculateDeterminant(*triangle->Points[0], *triangle->Points[1], *point);
 		det[1] = CalculateDeterminant(*triangle->Points[1], *triangle->Points[2], *point);
 		det[2] = CalculateDeterminant(*triangle->Points[2], *triangle->Points[0], *point);
@@ -157,7 +143,6 @@ void Mesh::AddPointToHull(Vec3* point) {
 			if (!triangle->ContainsPoint(*point)) {
 				SubdivideTriangle(triangle, point);
 			}
-
 			return;
 		}
 
@@ -182,7 +167,7 @@ void Mesh::AddPointToHull(Vec3* point) {
 }
 
 void Mesh::RemoveUnnecessaryTriangles() {
-	for (auto it = _Mesh->begin(); it != _Mesh->end();) {
+	for (auto it = _Mesh.begin(); it != _Mesh.end();) {
 		Triangle* triangle = *it;
 		bool isUnnecessaryTriangle = false;
 		for (int i = 0; i < 3; i++) {
@@ -194,8 +179,9 @@ void Mesh::RemoveUnnecessaryTriangles() {
 
 		if (isUnnecessaryTriangle) {
 			delete* it;
-			it = _Mesh->erase(it);
-		} else {
+			it = _Mesh.erase(it);
+		}
+		else {
 			++it;
 		}
 	}
@@ -216,8 +202,8 @@ void Mesh::SubdivideTriangle(Triangle* triangle, Vec3* point) {
 	UpdateTriangleNeighborhood(newTriangle1->Neighbor[1], triangle, newTriangle1);
 	UpdateTriangleNeighborhood(newTriangle2->Neighbor[1], triangle, newTriangle2);
 
-	_Mesh->push_back(newTriangle1);
-	_Mesh->push_back(newTriangle2);
+	_Mesh.push_back(newTriangle1);
+	_Mesh.push_back(newTriangle2);
 
 	// optimize triangles according to delaunay triangulation definition
 	OptimizeTrianglePair(triangle, triangle->Neighbor[1]);
@@ -242,7 +228,7 @@ void Mesh::OptimizeTrianglePair(Triangle* t0, Triangle* t1) {
 			continue;
 		}
 
-		double matrix[] = {
+		std::vector<double> matrix = {
 			t1->Points[i]->X - t0->Points[0]->X,
 			t1->Points[i]->Y - t0->Points[0]->Y,
 			t1->Points[i]->Z - t0->Points[0]->Z,
@@ -309,14 +295,14 @@ bool Mesh::HasMinimumValueAtIndex(const std::vector<double>& vec, int index) {
 	return true;
 }
 
-double Mesh::ComputeVectorDistance(Vec3 v0, Vec3 v1) {
+double Mesh::ComputeVectorDistance(const Vec3& v0, const Vec3& v1) {
 	return sqrt(pow((v0.X - v1.X), 2) +
 		pow((v0.Y - v1.Y), 2) +
 		pow((v0.Z - v1.Z), 2));
 }
 
-double Mesh::CalculateDeterminant(Vec3 v0, Vec3 v1, Vec3 v2) {
-	double matrix[] = {
+double Mesh::CalculateDeterminant(const Vec3& v0, const Vec3& v1, const Vec3& v2) {
+	std::vector<double> matrix = {
 		v0.X, v0.Y, v0.Z,
 		v1.X, v1.Y, v1.Z,
 		v2.X, v2.Y, v2.Z
@@ -325,13 +311,12 @@ double Mesh::CalculateDeterminant(Vec3 v0, Vec3 v1, Vec3 v2) {
 	return CalculateDeterminant(matrix);
 }
 
-double Mesh::CalculateDeterminant(double matrix[]) {
+double Mesh::CalculateDeterminant(const std::vector<double>& matrix) {
 	double determinant = matrix[2] * matrix[4] * matrix[6]
 		+ matrix[0] * matrix[5] * matrix[7]
 		+ matrix[1] * matrix[3] * matrix[8]
 		- matrix[0] * matrix[4] * matrix[8]
 		- matrix[1] * matrix[5] * matrix[6]
 		- matrix[2] * matrix[3] * matrix[7];
-
 	return abs(determinant) <= std::numeric_limits<double>::epsilon() ? 0 : determinant;
 }
