@@ -37,30 +37,30 @@ vector<tuple<int, int, int>> Mesh::GetTriangulationResult(const vector<Point3>& 
 	_Mesh.reserve(8 + (points.size() - 6) * 2);
 
 	// project points to an unit shpere for triangulation
-	for (auto it = points.begin(); it != points.end(); ++it) {
-		Point3 projectedPoint(*it, 1);
-		_ProjectedPoints.push_back(projectedPoint);
+	for(const auto& point : points) {
+		_ProjectedPoints.emplace_back(point, 1.0);
 	}
 
 	// prepare initial convex hull with 6 vertices and 8 triangle faces
 	ConstructConvexHull(_ProjectedPoints);
 
-	for (auto it = _ProjectedPoints.begin(); it != _ProjectedPoints.end(); ++it) {
-		if (!it->IsVisited) {
-			AddPointToHull(*it);
+	for(const auto& projectedPoint : _ProjectedPoints) {
+		if (!projectedPoint.IsVisited) {
+			AddPointToHull(projectedPoint);
 		}
 	}
 
 	RemoveUnnecessaryTriangles();
 
-	vector<tuple<int, int, int>> mesh = vector<tuple<int, int, int>>();
+	vector<tuple<int, int, int>> mesh;
+	mesh.reserve(_Mesh.size());
 	for (auto it = _Mesh.begin(); it != _Mesh.end(); it++) {
 		Triangle* triangle = *it;
-		mesh.push_back(tuple<int, int, int>(
+		mesh.emplace_back(
 			triangle->Points[0].Id,
 			triangle->Points[1].Id,
 			triangle->Points[2].Id
-		));
+		);
 	}
 	return mesh;
 }
