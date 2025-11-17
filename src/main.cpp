@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 
 	// Read input file
 	FileManager file_manager;
-	std::vector<Vec3*> points;
+	std::vector<Point3*> points;
 	try {
 		points = file_manager.read_input_file(input_file);
 	}
@@ -64,8 +64,8 @@ int main(int argc, char** argv) {
 	const auto& facets = mesh.GetFacets();
 
 	// Write output file
-	file_manager.write_output_file(output_file, points, facets);
-	//file_manager.write_obj("test.obj", points, facets);
+	//file_manager.write_output_file(output_file, points, facets);
+	file_manager.write_obj("D:\\work\\MeshGenerator\\data\\test1.obj", points, facets);
 
 	return 0;
 }

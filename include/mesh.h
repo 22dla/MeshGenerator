@@ -18,26 +18,26 @@
 class Mesh {
 public:
 	Mesh();
-	Mesh(const std::vector<Vec3*>& points);
+	Mesh(const std::vector<Point3*>& points);
 	~Mesh();
 
 	const std::vector<std::tuple<int, int, int>>& GetFacets();
-	std::vector<std::tuple<int, int, int>> GetTriangulationResult(const std::vector<Vec3*>& points);
+	std::vector<std::tuple<int, int, int>> GetTriangulationResult(const std::vector<Point3*>& points);
 private:
-	void ConstructConvexHull(const std::vector<Vec3*>& points);
-	void AddPointToHull(Vec3* point);
+	void ConstructConvexHull(const std::vector<Point3*>& points);
+	void AddPointToHull(Point3* point);
 	void RemoveUnnecessaryTriangles();
-	void SubdivideTriangle(Triangle* triangle, Vec3* point);
+	void SubdivideTriangle(Triangle* triangle, Point3* point);
 	void UpdateTriangleNeighborhood(Triangle* target, Triangle* oldNeighbor, Triangle* newNeighbor);
 	void OptimizeTrianglePair(Triangle* t0, Triangle* t1);
 	bool TrySwapDiagonal(Triangle* t0, Triangle* t1);
 	bool HasMinimumValueAtIndex(const std::vector<double>& vec, int index);
-	double ComputeVectorDistance(const Vec3& v0, const Vec3& v1);
-	double CalculateDeterminant(const Vec3& v0, const Vec3& v1, const Vec3& v2);
+	double ComputeVectorDistance(const Point3& v0, const Point3& v1);
+	double CalculateDeterminant(const Point3& v0, const Point3& v1, const Point3& v2);
 	double CalculateDeterminant(const std::vector<double>& matrix);
 
-	Vec3* _SupportingPoints[6];
-	std::vector<Vec3*> _ProjectedPoints;
+	Point3* _SupportingPoints[6];
+	std::vector<Point3*> _ProjectedPoints;
 	std::vector<Triangle*> _Mesh;
 	std::vector<std::tuple<int, int, int>> _Facets;
 };

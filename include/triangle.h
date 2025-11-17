@@ -7,14 +7,14 @@
 
 class Triangle {
 public:
-	Vec3* Points[3];
+	Point3* Points[3];
 
 	Triangle* Neighbor[3];
 
-	Triangle(Vec3* v0, Vec3* v1, Vec3* v2);
+	Triangle(Point3* v0, Point3* v1, Point3* v2);
 	~Triangle() = default;
 
-	bool ContainsPoint(Vec3 point);
+	bool ContainsPoint(Point3 point);
 	void AssignNeighbors(Triangle* n0, Triangle* n1, Triangle* n2);
 	int Id = 0;
 private:

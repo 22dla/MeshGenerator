@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Triangle::Triangle(Vec3* v0, Vec3* v1, Vec3* v2) {
+Triangle::Triangle(Point3* v0, Point3* v1, Point3* v2) {
 	Points[0] = v0; Points[1] = v1;	Points[2] = v2;
 	Id = GenerateNextId();
 }
@@ -13,7 +13,7 @@ int Triangle::GenerateNextId() {
 	return id++;
 }
 
-bool Triangle::ContainsPoint(Vec3 point) {
+bool Triangle::ContainsPoint(Point3 point) {
 	return Points[0]->Equals(point)
 		|| Points[1]->Equals(point)
 		|| Points[2]->Equals(point);

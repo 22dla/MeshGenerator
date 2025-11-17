@@ -4,17 +4,17 @@
 
 using namespace std;
 
-Vec3::Vec3(double x, double y, double z)
+Point3::Point3(double x, double y, double z)
 	:X(x), Y(y), Z(z) {
 	Id = GenerateNextId();
 }
 
-Vec3::Vec3(double x, double y, double z, bool isSupportPoint)
+Point3::Point3(double x, double y, double z, bool isSupportPoint)
 	:X(x), Y(y), Z(z), IsSupportPoint(isSupportPoint) {
 	Id = GenerateNextId();
 }
 
-Vec3::Vec3(Vec3* point, double lengthAfterProjection) {
+Point3::Point3(Point3* point, double lengthAfterProjection) {
 	Id = point->Id;
 	IsVisited = point->IsVisited;
 	IsSupportPoint = point->IsSupportPoint;
@@ -27,11 +27,11 @@ Vec3::Vec3(Vec3* point, double lengthAfterProjection) {
 	Z = scaleFactor * point->Z;
 }
 
-int Vec3::GenerateNextId() {
+int Point3::GenerateNextId() {
 	static int id = 0;
 	return id++;
 }
 
-bool Vec3::Equals(Vec3 point) {
+bool Point3::Equals(Point3 point) {
 	return (X == point.X && Y == point.Y && Z == point.Z);
 }

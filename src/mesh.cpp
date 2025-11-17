@@ -7,14 +7,14 @@
 
 using namespace std;
 
-Mesh::Mesh(const std::vector<Vec3*>& points)
+Mesh::Mesh(const std::vector<Point3*>& points)
 	: Mesh() {
 	_Facets = GetTriangulationResult(points);
 }
 
 Mesh::Mesh() {
 	for (int i = 0; i < 6; i++) {
-		_SupportingPoints[i] = new Vec3(
+		_SupportingPoints[i] = new Point3(
 			(i % 2 == 0 ? 1 : -1) * (i / 2 == 0 ? 1 : 0),
 			(i % 2 == 0 ? 1 : -1) * (i / 2 == 1 ? 1 : 0),
 			(i % 2 == 0 ? 1 : -1) * (i / 2 == 2 ? 1 : 0),
@@ -33,7 +33,7 @@ const std::vector<std::tuple<int, int, int>>& Mesh::GetFacets() {
 	return this->_Facets;
 }
 
-vector<tuple<int, int, int>> Mesh::GetTriangulationResult(const vector<Vec3*>& points) {
+vector<tuple<int, int, int>> Mesh::GetTriangulationResult(const vector<Point3*>& points) {
 	_ProjectedPoints.reserve(points.size());
 
 	// N random points can form 8+(N-6)*2 triangles based on the algorithm
@@ -41,7 +41,7 @@ vector<tuple<int, int, int>> Mesh::GetTriangulationResult(const vector<Vec3*>& p
 
 	// project points to an unit shpere for triangulation
 	for (auto it = points.begin(); it != points.end(); ++it) {
-		Vec3* projectedPoint = new Vec3((*it), 1);
+		Point3* projectedPoint = new Point3((*it), 1);
 		_ProjectedPoints.push_back(projectedPoint);
 	}
 
@@ -69,8 +69,8 @@ vector<tuple<int, int, int>> Mesh::GetTriangulationResult(const vector<Vec3*>& p
 	return mesh;
 }
 
-void Mesh::ConstructConvexHull(const vector<Vec3*>& points) {
-	std::vector<Vec3*> initialPoints(6);
+void Mesh::ConstructConvexHull(const vector<Point3*>& points) {
+	std::vector<Point3*> initialPoints(6);
 	std::vector <Triangle*> initialHullFaces(8);
 
 	for (int i = 0; i < initialPoints.size(); i++) {
@@ -100,9 +100,9 @@ void Mesh::ConstructConvexHull(const vector<Vec3*>& points) {
 	std::vector<int> vertex2Index = { 2, 4, 3, 5, 4, 3, 5, 2 };
 
 	for (int i = 0; i < initialHullFaces.size(); i++) {
-		Vec3* v0 = initialPoints[vertex0Index[i]];
-		Vec3* v1 = initialPoints[vertex1Index[i]];
-		Vec3* v2 = initialPoints[vertex2Index[i]];
+		Point3* v0 = initialPoints[vertex0Index[i]];
+		Point3* v1 = initialPoints[vertex1Index[i]];
+		Point3* v2 = initialPoints[vertex2Index[i]];
 
 		Triangle* triangle = new Triangle(v0, v1, v2);
 		initialHullFaces[i] = triangle;
@@ -127,7 +127,7 @@ void Mesh::ConstructConvexHull(const vector<Vec3*>& points) {
 	}
 }
 
-void Mesh::AddPointToHull(Vec3* point) {
+void Mesh::AddPointToHull(Point3* point) {
 	std::vector<double> det = { 0, 0, 0 };
 
 	auto it = _Mesh.begin();
@@ -187,7 +187,7 @@ void Mesh::RemoveUnnecessaryTriangles() {
 	}
 }
 
-void Mesh::SubdivideTriangle(Triangle* triangle, Vec3* point) {
+void Mesh::SubdivideTriangle(Triangle* triangle, Point3* point) {
 	Triangle* newTriangle1 = new Triangle(point, triangle->Points[1], triangle->Points[2]);
 	Triangle* newTriangle2 = new Triangle(point, triangle->Points[2], triangle->Points[0]);
 
@@ -295,13 +295,13 @@ bool Mesh::HasMinimumValueAtIndex(const std::vector<double>& vec, int index) {
 	return true;
 }
 
-double Mesh::ComputeVectorDistance(const Vec3& v0, const Vec3& v1) {
+double Mesh::ComputeVectorDistance(const Point3& v0, const Point3& v1) {
 	return sqrt(pow((v0.X - v1.X), 2) +
 		pow((v0.Y - v1.Y), 2) +
 		pow((v0.Z - v1.Z), 2));
 }
 
-double Mesh::CalculateDeterminant(const Vec3& v0, const Vec3& v1, const Vec3& v2) {
+double Mesh::CalculateDeterminant(const Point3& v0, const Point3& v1, const Point3& v2) {
 	std::vector<double> matrix = {
 		v0.X, v0.Y, v0.Z,
 		v1.X, v1.Y, v1.Z,
