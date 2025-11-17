@@ -16,8 +16,8 @@ std::vector<Point3> FileManager::read_input_file(const std::string& filename) {
 
 	std::string line;
 	while (std::getline(infile, line)) {
-		// Skip comment lines starting with '*'
-		if (line[0] == '*') {
+		// Skip empty lines and comment lines starting with '*'
+		if (line.empty() || line[0] == '*') {
 			continue;
 		}
 
@@ -36,8 +36,7 @@ std::vector<Point3> FileManager::read_input_file(const std::string& filename) {
 		std::getline(iss, token);
 		auto z = static_cast<float>(std::stod(token));
 
-		Point3 point(x, y, z);
-		points.push_back(point);
+		points.emplace_back(x, y, z);
 	}
 	std::cout << "Read " << points.size() << " points" << std::endl;
 	return points;
@@ -95,6 +94,4 @@ void FileManager::write_obj(const std::string& filename,
 		int v2 = std::get<2>(facet) + 1;
 		file << "f " << v0 << " " << v1 << " " << v2 << std::endl;
 	}
-
-	file.close();
 }

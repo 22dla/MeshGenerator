@@ -1,7 +1,4 @@
-#include <string>
 #include <triangle.h>
-
-using namespace std;
 
 Triangle::Triangle(const Point3& v0, const Point3& v1, const Point3& v2) {
 	Points[0] = v0; Points[1] = v1;	Points[2] = v2;

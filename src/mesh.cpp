@@ -1,11 +1,8 @@
-#include <string>
 #include <tuple>
 #include <vector>
 #include <cmath>
 #include <limits>
 #include <mesh.h>
-
-using namespace std;
 
 Mesh::Mesh(const std::vector<Point3>& points)
 	: Mesh() {
@@ -24,19 +21,23 @@ Mesh::Mesh() {
 }
 
 Mesh::~Mesh() {
+	for (Triangle* triangle : _Mesh) {
+		delete triangle;
+	}
 }
 
-const std::vector<std::tuple<int, int, int>>& Mesh::GetFacets() {
-	return this->_Facets;
+const std::vector<std::tuple<int, int, int>>& Mesh::GetFacets() const {
+	return _Facets;
 }
 
-vector<tuple<int, int, int>> Mesh::GetTriangulationResult(const vector<Point3>& points) {
+std::vector<std::tuple<int, int, int>> Mesh::GetTriangulationResult(const std::vector<Point3>& points) {
 	_ProjectedPoints.reserve(points.size());
 
 	// N random points can form 8+(N-6)*2 triangles based on the algorithm
-	_Mesh.reserve(8 + (points.size() - 6) * 2);
+	size_t count = 8 + (points.size() > 6 ? (points.size() - 6) * 2 : 0);
+	_Mesh.reserve(count);
 
-	// project points to an unit shpere for triangulation
+	// project points to an unit sphere for triangulation
 	for(const auto& point : points) {
 		_ProjectedPoints.emplace_back(point, 1.0);
 	}
@@ -52,10 +53,9 @@ vector<tuple<int, int, int>> Mesh::GetTriangulationResult(const vector<Point3>& 
 
 	RemoveUnnecessaryTriangles();
 
-	vector<tuple<int, int, int>> mesh;
+	std::vector<std::tuple<int, int, int>> mesh;
 	mesh.reserve(_Mesh.size());
-	for (auto it = _Mesh.begin(); it != _Mesh.end(); it++) {
-		Triangle* triangle = *it;
+	for (const auto* triangle : _Mesh) {
 		mesh.emplace_back(
 			triangle->Points[0].Id,
 			triangle->Points[1].Id,
@@ -65,7 +65,7 @@ vector<tuple<int, int, int>> Mesh::GetTriangulationResult(const vector<Point3>& 
 	return mesh;
 }
 
-void Mesh::ConstructConvexHull(const vector<Point3>& points) {
+void Mesh::ConstructConvexHull(const std::vector<Point3>& points) {
 	std::vector<Point3> initialPoints(6);
 
 	for (int i = 0; i < initialPoints.size(); i++) {

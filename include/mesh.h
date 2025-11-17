@@ -21,7 +21,7 @@ public:
 	Mesh(const std::vector<Point3>& points);
 	~Mesh();
 
-	const std::vector<std::tuple<int, int, int>>& GetFacets();
+	const std::vector<std::tuple<int, int, int>>& GetFacets() const;
 	std::vector<std::tuple<int, int, int>> GetTriangulationResult(const std::vector<Point3>& points);
 private:
 	void ConstructConvexHull(const std::vector<Point3>& points);
