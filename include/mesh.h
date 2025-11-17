@@ -1,6 +1,8 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include <memory>
+#include <vector>
 #include <point.h>
 #include <triangle.h>
 
@@ -21,6 +23,14 @@ public:
 	Mesh(const std::vector<Point3>& points);
 	~Mesh();
 
+	// Delete copy constructor and assignment operator (Mesh contains unique_ptr)
+	Mesh(const Mesh&) = delete;
+	Mesh& operator=(const Mesh&) = delete;
+
+	// Allow move constructor and move assignment
+	Mesh(Mesh&&) = default;
+	Mesh& operator=(Mesh&&) = default;
+
 	const std::vector<std::tuple<int, int, int>>& GetFacets() const;
 	std::vector<std::tuple<int, int, int>> GetTriangulationResult(const std::vector<Point3>& points);
 private:
@@ -38,7 +48,7 @@ private:
 
 	Point3 _SupportingPoints[6];
 	std::vector<Point3> _ProjectedPoints;
-	std::vector<Triangle*> _Mesh;
+	std::vector<std::unique_ptr<Triangle>> _Mesh;
 	std::vector<std::tuple<int, int, int>> _Facets;
 };
 #endif

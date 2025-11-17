@@ -20,11 +20,7 @@ Mesh::Mesh() {
 	}
 }
 
-Mesh::~Mesh() {
-	for (Triangle* triangle : _Mesh) {
-		delete triangle;
-	}
-}
+Mesh::~Mesh() = default;
 
 const std::vector<std::tuple<int, int, int>>& Mesh::GetFacets() const {
 	return _Facets;
@@ -55,7 +51,7 @@ std::vector<std::tuple<int, int, int>> Mesh::GetTriangulationResult(const std::v
 
 	std::vector<std::tuple<int, int, int>> mesh;
 	mesh.reserve(_Mesh.size());
-	for (const auto* triangle : _Mesh) {
+	for (const auto& triangle : _Mesh) {
 		mesh.emplace_back(
 			triangle->Points[0].Id,
 			triangle->Points[1].Id,
@@ -93,17 +89,18 @@ void Mesh::ConstructConvexHull(const std::vector<Point3>& points) {
 	std::vector<int> vertex0Index = { 0, 0, 0, 0, 1, 1, 1, 1 };
 	std::vector<int> vertex1Index = { 4, 3, 5, 2, 2, 4, 3, 5 };
 	std::vector<int> vertex2Index = { 2, 4, 3, 5, 4, 3, 5, 2 };
-	std::vector <Triangle*> initialHullFaces(8);
+	std::vector<Triangle*> initialHullFaces(8);
 
 	for (int i = 0; i < initialHullFaces.size(); i++) {
 		const Point3& v0 = initialPoints[vertex0Index[i]];
 		const Point3& v1 = initialPoints[vertex1Index[i]];
 		const Point3& v2 = initialPoints[vertex2Index[i]];
 
-		Triangle* triangle = new Triangle(v0, v1, v2);
-		initialHullFaces[i] = triangle;
+		auto triangle = std::make_unique<Triangle>(v0, v1, v2);
+		Triangle* trianglePtr = triangle.get();
+		initialHullFaces[i] = trianglePtr;
 
-		_Mesh.push_back(triangle);
+		_Mesh.push_back(std::move(triangle));
 	}
 
 	int neighbor0Index[] = { 1, 2, 3, 0, 7, 4, 5, 6 };
@@ -127,7 +124,7 @@ void Mesh::AddPointToHull(const Point3& point) {
 	std::vector<double> det = { 0, 0, 0 };
 
 	auto it = _Mesh.begin();
-	Triangle* triangle = *it;
+	Triangle* triangle = it->get();
 
 	while (it != _Mesh.end()) {
 		det[0] = CalculateDeterminant(triangle->Points[0], triangle->Points[1], point);
@@ -158,13 +155,13 @@ void Mesh::AddPointToHull(const Point3& point) {
 		else if (det[2] >= 0)
 			triangle = triangle->Neighbor[0];
 		else
-			triangle = *it++;
+			triangle = (it++)->get();
 	}
 }
 
 void Mesh::RemoveUnnecessaryTriangles() {
 	for (auto it = _Mesh.begin(); it != _Mesh.end();) {
-		Triangle* triangle = *it;
+		Triangle* triangle = it->get();
 		bool isUnnecessaryTriangle = false;
 		for (int i = 0; i < 3; i++) {
 			if (triangle->Points[i].IsSupportPoint) {
@@ -174,7 +171,6 @@ void Mesh::RemoveUnnecessaryTriangles() {
 		}
 
 		if (isUnnecessaryTriangle) {
-			delete* it;
 			it = _Mesh.erase(it);
 		}
 		else {
@@ -184,27 +180,30 @@ void Mesh::RemoveUnnecessaryTriangles() {
 }
 
 void Mesh::SubdivideTriangle(Triangle* triangle, const Point3& point) {
-	Triangle* newTriangle1 = new Triangle(point, triangle->Points[1], triangle->Points[2]);
-	Triangle* newTriangle2 = new Triangle(point, triangle->Points[2], triangle->Points[0]);
+	auto newTriangle1 = std::make_unique<Triangle>(point, triangle->Points[1], triangle->Points[2]);
+	auto newTriangle2 = std::make_unique<Triangle>(point, triangle->Points[2], triangle->Points[0]);
+
+	Triangle* newTriangle1Ptr = newTriangle1.get();
+	Triangle* newTriangle2Ptr = newTriangle2.get();
 
 	triangle->Points[2] = triangle->Points[1];
 	triangle->Points[1] = triangle->Points[0];
 	triangle->Points[0] = point;
 
-	newTriangle1->AssignNeighbors(triangle, triangle->Neighbor[1], newTriangle2);
-	newTriangle2->AssignNeighbors(newTriangle1, triangle->Neighbor[2], triangle);
-	triangle->AssignNeighbors(newTriangle2, triangle->Neighbor[0], newTriangle1);
+	newTriangle1Ptr->AssignNeighbors(triangle, triangle->Neighbor[1], newTriangle2Ptr);
+	newTriangle2Ptr->AssignNeighbors(newTriangle1Ptr, triangle->Neighbor[2], triangle);
+	triangle->AssignNeighbors(newTriangle2Ptr, triangle->Neighbor[0], newTriangle1Ptr);
 
-	UpdateTriangleNeighborhood(newTriangle1->Neighbor[1], triangle, newTriangle1);
-	UpdateTriangleNeighborhood(newTriangle2->Neighbor[1], triangle, newTriangle2);
+	UpdateTriangleNeighborhood(newTriangle1Ptr->Neighbor[1], triangle, newTriangle1Ptr);
+	UpdateTriangleNeighborhood(newTriangle2Ptr->Neighbor[1], triangle, newTriangle2Ptr);
 
-	_Mesh.push_back(newTriangle1);
-	_Mesh.push_back(newTriangle2);
+	_Mesh.push_back(std::move(newTriangle1));
+	_Mesh.push_back(std::move(newTriangle2));
 
 	// optimize triangles according to delaunay triangulation definition
 	OptimizeTrianglePair(triangle, triangle->Neighbor[1]);
-	OptimizeTrianglePair(newTriangle1, newTriangle1->Neighbor[1]);
-	OptimizeTrianglePair(newTriangle2, newTriangle2->Neighbor[1]);
+	OptimizeTrianglePair(newTriangle1Ptr, newTriangle1Ptr->Neighbor[1]);
+	OptimizeTrianglePair(newTriangle2Ptr, newTriangle2Ptr->Neighbor[1]);
 }
 
 void Mesh::UpdateTriangleNeighborhood(Triangle* target, Triangle* oldNeighbor, Triangle* newNeighbor) {
