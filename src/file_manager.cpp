@@ -4,8 +4,8 @@
 #include <iomanip>
 #include <file_manager.h>
 
-std::vector<Point3*> FileManager::read_input_file(const std::string& filename) {
-	std::vector<Point3*> points = std::vector<Point3*>();; // RVO works
+std::vector<Point3> FileManager::read_input_file(const std::string& filename) {
+	std::vector<Point3> points;
 
 	std::ifstream infile(filename);
 	if (!infile) {
@@ -36,7 +36,7 @@ std::vector<Point3*> FileManager::read_input_file(const std::string& filename) {
 		std::getline(iss, token);
 		auto z = static_cast<float>(std::stod(token));
 
-		Point3* point = new Point3(x, y, z);
+		Point3 point(x, y, z);
 		points.push_back(point);
 	}
 	std::cout << "Read " << points.size() << " points" << std::endl;
@@ -44,7 +44,7 @@ std::vector<Point3*> FileManager::read_input_file(const std::string& filename) {
 }
 
 void FileManager::write_output_file(const std::string& filename,
-	const std::vector<Point3*>& points,
+	const std::vector<Point3>& points,
 	const std::vector<std::tuple<int, int, int>>& facets) {
 	std::ofstream outfile(filename);
 	if (!outfile) {
@@ -57,9 +57,9 @@ void FileManager::write_output_file(const std::string& filename,
 	for (std::size_t i = 0; i < points.size(); ++i) {
 		const auto& point = points[i];
 		outfile << std::setw(5) << i + 1 << ",";
-		outfile << std::setw(12) << point->X << ",";
-		outfile << std::setw(12) << point->Y << ",";
-		outfile << std::setw(12) << point->Z << "\n";
+		outfile << std::setw(12) << point.X << ",";
+		outfile << std::setw(12) << point.Y << ",";
+		outfile << std::setw(12) << point.Z << "\n";
 	}
 
 	outfile << "*Elements\n";
@@ -74,7 +74,7 @@ void FileManager::write_output_file(const std::string& filename,
 }
 
 void FileManager::write_obj(const std::string& filename,
-	const std::vector<Point3*>& points,
+	const std::vector<Point3>& points,
 	const std::vector<std::tuple<int, int, int>>& facets) {
 	std::ofstream file(filename);
 
@@ -85,7 +85,7 @@ void FileManager::write_obj(const std::string& filename,
 
 	// Write vertex information
 	for (const auto& point : points) {
-		file << "v " << point->X << " " << point->Y << " " << point->Z << std::endl;
+		file << "v " << point.X << " " << point.Y << " " << point.Z << std::endl;
 	}
 
 	// Write triangle information

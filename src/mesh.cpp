@@ -7,14 +7,14 @@
 
 using namespace std;
 
-Mesh::Mesh(const std::vector<Point3*>& points)
+Mesh::Mesh(const std::vector<Point3>& points)
 	: Mesh() {
 	_Facets = GetTriangulationResult(points);
 }
 
 Mesh::Mesh() {
 	for (int i = 0; i < 6; i++) {
-		_SupportingPoints[i] = new Point3(
+		_SupportingPoints[i] = Point3(
 			(i % 2 == 0 ? 1 : -1) * (i / 2 == 0 ? 1 : 0),
 			(i % 2 == 0 ? 1 : -1) * (i / 2 == 1 ? 1 : 0),
 			(i % 2 == 0 ? 1 : -1) * (i / 2 == 2 ? 1 : 0),
@@ -24,16 +24,13 @@ Mesh::Mesh() {
 }
 
 Mesh::~Mesh() {
-	for (int i = 0; i < 6; i++) {
-		delete _SupportingPoints[i];
-	}
 }
 
 const std::vector<std::tuple<int, int, int>>& Mesh::GetFacets() {
 	return this->_Facets;
 }
 
-vector<tuple<int, int, int>> Mesh::GetTriangulationResult(const vector<Point3*>& points) {
+vector<tuple<int, int, int>> Mesh::GetTriangulationResult(const vector<Point3>& points) {
 	_ProjectedPoints.reserve(points.size());
 
 	// N random points can form 8+(N-6)*2 triangles based on the algorithm
@@ -41,7 +38,7 @@ vector<tuple<int, int, int>> Mesh::GetTriangulationResult(const vector<Point3*>&
 
 	// project points to an unit shpere for triangulation
 	for (auto it = points.begin(); it != points.end(); ++it) {
-		Point3* projectedPoint = new Point3((*it), 1);
+		Point3 projectedPoint(*it, 1);
 		_ProjectedPoints.push_back(projectedPoint);
 	}
 
@@ -49,9 +46,8 @@ vector<tuple<int, int, int>> Mesh::GetTriangulationResult(const vector<Point3*>&
 	ConstructConvexHull(_ProjectedPoints);
 
 	for (auto it = _ProjectedPoints.begin(); it != _ProjectedPoints.end(); ++it) {
-		auto point = *it;
-		if (!point->IsVisited) {
-			AddPointToHull(point);
+		if (!it->IsVisited) {
+			AddPointToHull(*it);
 		}
 	}
 
@@ -61,17 +57,16 @@ vector<tuple<int, int, int>> Mesh::GetTriangulationResult(const vector<Point3*>&
 	for (auto it = _Mesh.begin(); it != _Mesh.end(); it++) {
 		Triangle* triangle = *it;
 		mesh.push_back(tuple<int, int, int>(
-			triangle->Points[0]->Id,
-			triangle->Points[1]->Id,
-			triangle->Points[2]->Id
+			triangle->Points[0].Id,
+			triangle->Points[1].Id,
+			triangle->Points[2].Id
 		));
 	}
 	return mesh;
 }
 
-void Mesh::ConstructConvexHull(const vector<Point3*>& points) {
-	std::vector<Point3*> initialPoints(6);
-	std::vector <Triangle*> initialHullFaces(8);
+void Mesh::ConstructConvexHull(const vector<Point3>& points) {
+	std::vector<Point3> initialPoints(6);
 
 	for (int i = 0; i < initialPoints.size(); i++) {
 		initialPoints[i] = _SupportingPoints[i];
@@ -82,7 +77,7 @@ void Mesh::ConstructConvexHull(const vector<Point3*>& points) {
 	for (auto it = points.begin(); it != points.end(); ++it) {
 		std::vector<double> distance(initialPoints.size());
 		for (int i = 0; i < distance.size(); ++i) {
-			distance[i] = ComputeVectorDistance(*_SupportingPoints[i], **it);
+			distance[i] = ComputeVectorDistance(_SupportingPoints[i], *it);
 			if (minDistance[i] == 0 || distance[i] < minDistance[i]) {
 				minDistance[i] = distance[i];
 			}
@@ -98,11 +93,12 @@ void Mesh::ConstructConvexHull(const vector<Point3*>& points) {
 	std::vector<int> vertex0Index = { 0, 0, 0, 0, 1, 1, 1, 1 };
 	std::vector<int> vertex1Index = { 4, 3, 5, 2, 2, 4, 3, 5 };
 	std::vector<int> vertex2Index = { 2, 4, 3, 5, 4, 3, 5, 2 };
+	std::vector <Triangle*> initialHullFaces(8);
 
 	for (int i = 0; i < initialHullFaces.size(); i++) {
-		Point3* v0 = initialPoints[vertex0Index[i]];
-		Point3* v1 = initialPoints[vertex1Index[i]];
-		Point3* v2 = initialPoints[vertex2Index[i]];
+		const Point3& v0 = initialPoints[vertex0Index[i]];
+		const Point3& v1 = initialPoints[vertex1Index[i]];
+		const Point3& v2 = initialPoints[vertex2Index[i]];
 
 		Triangle* triangle = new Triangle(v0, v1, v2);
 		initialHullFaces[i] = triangle;
@@ -123,24 +119,24 @@ void Mesh::ConstructConvexHull(const vector<Point3*>& points) {
 
 	// point already in the mesh, avoid being visited by InsertDot() again
 	for (int i = 0; i < initialPoints.size(); i++) {
-		initialPoints[i]->IsVisited = true;
+		initialPoints[i].IsVisited = true;
 	}
 }
 
-void Mesh::AddPointToHull(Point3* point) {
+void Mesh::AddPointToHull(const Point3& point) {
 	std::vector<double> det = { 0, 0, 0 };
 
 	auto it = _Mesh.begin();
 	Triangle* triangle = *it;
 
 	while (it != _Mesh.end()) {
-		det[0] = CalculateDeterminant(*triangle->Points[0], *triangle->Points[1], *point);
-		det[1] = CalculateDeterminant(*triangle->Points[1], *triangle->Points[2], *point);
-		det[2] = CalculateDeterminant(*triangle->Points[2], *triangle->Points[0], *point);
+		det[0] = CalculateDeterminant(triangle->Points[0], triangle->Points[1], point);
+		det[1] = CalculateDeterminant(triangle->Points[1], triangle->Points[2], point);
+		det[2] = CalculateDeterminant(triangle->Points[2], triangle->Points[0], point);
 
 		// if this point projected into an existing triangle, split the existing triangle to 3 new ones
 		if (det[0] >= 0 && det[1] >= 0 && det[2] >= 0) {
-			if (!triangle->ContainsPoint(*point)) {
+			if (!triangle->ContainsPoint(point)) {
 				SubdivideTriangle(triangle, point);
 			}
 			return;
@@ -171,7 +167,7 @@ void Mesh::RemoveUnnecessaryTriangles() {
 		Triangle* triangle = *it;
 		bool isUnnecessaryTriangle = false;
 		for (int i = 0; i < 3; i++) {
-			if (triangle->Points[i]->IsSupportPoint) {
+			if (triangle->Points[i].IsSupportPoint) {
 				isUnnecessaryTriangle = true;
 				break;
 			}
@@ -187,7 +183,7 @@ void Mesh::RemoveUnnecessaryTriangles() {
 	}
 }
 
-void Mesh::SubdivideTriangle(Triangle* triangle, Point3* point) {
+void Mesh::SubdivideTriangle(Triangle* triangle, const Point3& point) {
 	Triangle* newTriangle1 = new Triangle(point, triangle->Points[1], triangle->Points[2]);
 	Triangle* newTriangle2 = new Triangle(point, triangle->Points[2], triangle->Points[0]);
 
@@ -222,24 +218,24 @@ void Mesh::UpdateTriangleNeighborhood(Triangle* target, Triangle* oldNeighbor, T
 
 void Mesh::OptimizeTrianglePair(Triangle* t0, Triangle* t1) {
 	for (int i = 0; i < 3; i++) {
-		if (t1->Points[i] == t0->Points[0] ||
-			t1->Points[i] == t0->Points[1] ||
-			t1->Points[i] == t0->Points[2]) {
+		if (t1->Points[i].Id == t0->Points[0].Id ||
+			t1->Points[i].Id == t0->Points[1].Id ||
+			t1->Points[i].Id == t0->Points[2].Id) {
 			continue;
 		}
 
 		std::vector<double> matrix = {
-			t1->Points[i]->X - t0->Points[0]->X,
-			t1->Points[i]->Y - t0->Points[0]->Y,
-			t1->Points[i]->Z - t0->Points[0]->Z,
+			t1->Points[i].X - t0->Points[0].X,
+			t1->Points[i].Y - t0->Points[0].Y,
+			t1->Points[i].Z - t0->Points[0].Z,
 
-			t1->Points[i]->X - t0->Points[1]->X,
-			t1->Points[i]->Y - t0->Points[1]->Y,
-			t1->Points[i]->Z - t0->Points[1]->Z,
+			t1->Points[i].X - t0->Points[1].X,
+			t1->Points[i].Y - t0->Points[1].Y,
+			t1->Points[i].Z - t0->Points[1].Z,
 
-			t1->Points[i]->X - t0->Points[2]->X,
-			t1->Points[i]->Y - t0->Points[2]->Y,
-			t1->Points[i]->Z - t0->Points[2]->Z
+			t1->Points[i].X - t0->Points[2].X,
+			t1->Points[i].Y - t0->Points[2].Y,
+			t1->Points[i].Z - t0->Points[2].Z
 		};
 
 		if (CalculateDeterminant(matrix) <= 0) {
@@ -255,12 +251,12 @@ void Mesh::OptimizeTrianglePair(Triangle* t0, Triangle* t1) {
 bool Mesh::TrySwapDiagonal(Triangle* t0, Triangle* t1) {
 	for (int j = 0; j < 3; j++) {
 		for (int k = 0; k < 3; k++) {
-			if (t0->Points[j] != t1->Points[0] &&
-				t0->Points[j] != t1->Points[1] &&
-				t0->Points[j] != t1->Points[2] &&
-				t1->Points[k] != t0->Points[0] &&
-				t1->Points[k] != t0->Points[1] &&
-				t1->Points[k] != t0->Points[2]) {
+			if (t0->Points[j].Id != t1->Points[0].Id &&
+				t0->Points[j].Id != t1->Points[1].Id &&
+				t0->Points[j].Id != t1->Points[2].Id &&
+				t1->Points[k].Id != t0->Points[0].Id &&
+				t1->Points[k].Id != t0->Points[1].Id &&
+				t1->Points[k].Id != t0->Points[2].Id) {
 				t0->Points[(j + 2) % 3] = t1->Points[k];
 				t1->Points[(k + 2) % 3] = t0->Points[j];
 

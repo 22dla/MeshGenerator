@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 
 	// Read input file
 	FileManager file_manager;
-	std::vector<Point3*> points;
+	std::vector<Point3> points;
 	try {
 		points = file_manager.read_input_file(input_file);
 	}

@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Triangle::Triangle(Point3* v0, Point3* v1, Point3* v2) {
+Triangle::Triangle(const Point3& v0, const Point3& v1, const Point3& v2) {
 	Points[0] = v0; Points[1] = v1;	Points[2] = v2;
 	Id = GenerateNextId();
 }
@@ -13,10 +13,10 @@ int Triangle::GenerateNextId() {
 	return id++;
 }
 
-bool Triangle::ContainsPoint(Point3 point) {
-	return Points[0]->Equals(point)
-		|| Points[1]->Equals(point)
-		|| Points[2]->Equals(point);
+bool Triangle::ContainsPoint(const Point3& point) {
+	return Points[0].Equals(point)
+		|| Points[1].Equals(point)
+		|| Points[2].Equals(point);
 }
 
 void Triangle::AssignNeighbors(Triangle* n0, Triangle* n1, Triangle* n2) {
