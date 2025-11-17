@@ -1,8 +1,8 @@
 #ifndef POINT_H
 #define POINT_H
 
-/* Struct Point3 represents a 3D point with coordinates (x, y, z)
-* and provides methods for comparison with other points. */
+// Struct Point3 represents a 3D point with coordinates (x, y, z)
+// and provides methods for comparison with other points.
 
 struct Point3 {
 	double X = 0.0;
@@ -26,4 +26,5 @@ struct Point3 {
 private:
 	static int GenerateNextId();
 };
+
 #endif

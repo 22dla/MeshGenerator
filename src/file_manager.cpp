@@ -1,7 +1,8 @@
 #include <fstream>
-#include <sstream>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <sstream>
+
 #include <file_manager.h>
 
 std::vector<Point3> FileManager::read_input_file(const std::string& filename) {
@@ -10,9 +11,8 @@ std::vector<Point3> FileManager::read_input_file(const std::string& filename) {
 	std::ifstream infile(filename);
 	if (!infile) {
 		throw std::runtime_error("Could not open file: " + filename);
-	} else {
-		std::cout << "Reading input file: " << filename << std::endl;
 	}
+	std::cout << "Reading input file: " << filename << std::endl;
 
 	std::string line;
 	while (std::getline(infile, line)) {
@@ -48,9 +48,8 @@ void FileManager::write_output_file(const std::string& filename,
 	std::ofstream outfile(filename);
 	if (!outfile) {
 		throw std::runtime_error("Could not open file: " + filename);
-	} else {
-		std::cout << "Writing into file: " << filename << std::endl;
 	}
+	std::cout << "Writing into file: " << filename << std::endl;
 	outfile << "*   N,            X             Y             Z\n";
 	outfile << "* Nodes\n";
 	for (std::size_t i = 0; i < points.size(); ++i) {
@@ -88,8 +87,9 @@ void FileManager::write_obj(const std::string& filename,
 	}
 
 	// Write triangle information
+	// OBJ file format indexes vertices starting from 1, not 0
 	for (const auto& facet : facets) {
-		int v0 = std::get<0>(facet) + 1; // OBJ file format indexes vertices starting from 1, not 0
+		int v0 = std::get<0>(facet) + 1;
 		int v1 = std::get<1>(facet) + 1;
 		int v2 = std::get<2>(facet) + 1;
 		file << "f " << v0 << " " << v1 << " " << v2 << std::endl;

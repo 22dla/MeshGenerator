@@ -1,9 +1,5 @@
 #include <cmath>
-#include <string>
-#include <iostream>
 #include <point.h>
-
-using namespace std;
 
 Point3::Point3(double x, double y, double z)
 	: X(x), Y(y), Z(z), Id(GenerateNextId()), IsVisited(false), IsSupportPoint(false) {

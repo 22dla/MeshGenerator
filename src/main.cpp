@@ -1,15 +1,17 @@
 #include <iostream>
+#include <string>
+
 #include <file_manager.h>
 #include <mesh.h>
 
 int parse_arguments(int argc, char* argv[], std::string& input_file, std::string& output_file) {
-	// parse command line arguments
-	for (int i = 1; i < argc; i++) {
+	// Parse command line arguments
+	for (int i = 1; i < argc; ++i) {
 		std::string arg = argv[i];
 		if (arg == "-i" || arg == "--input") {
 			if (i + 1 < argc) {
 				input_file = argv[i + 1];
-				i++;
+				++i;
 			} else {
 				std::cerr << "Error: argument " << arg << " requires a value" << std::endl;
 				return 1;
@@ -17,7 +19,7 @@ int parse_arguments(int argc, char* argv[], std::string& input_file, std::string
 		} else if (arg == "-o" || arg == "--output") {
 			if (i + 1 < argc) {
 				output_file = argv[i + 1];
-				i++;
+				++i;
 			} else {
 				std::cerr << "Error: argument " << arg << " requires a value" << std::endl;
 				return 1;
@@ -28,7 +30,7 @@ int parse_arguments(int argc, char* argv[], std::string& input_file, std::string
 		}
 	}
 
-	// check that required arguments are present
+	// Check that required arguments are present
 	if (input_file.empty()) {
 		std::cerr << "Error: argument -i or --input is required" << std::endl;
 		return 1;
@@ -37,7 +39,6 @@ int parse_arguments(int argc, char* argv[], std::string& input_file, std::string
 		std::cerr << "Error: argument -o or --output is required" << std::endl;
 		return 1;
 	}
-
 	return 0;
 }
 
@@ -54,9 +55,9 @@ int main(int argc, char** argv) {
 	std::vector<Point3> points;
 	try {
 		points = file_manager.read_input_file(input_file);
-	}
-	catch (std::runtime_error& e) {
+	} catch (const std::runtime_error& e) {
 		std::cerr << e.what() << std::endl;
+		return 1;
 	}
 
 	// Create mesh
@@ -64,7 +65,7 @@ int main(int argc, char** argv) {
 	const auto& facets = mesh.GetFacets();
 
 	// Write output file
-	//file_manager.write_output_file(output_file, points, facets);
+	// file_manager.write_output_file(output_file, points, facets);
 	file_manager.write_obj("D:\\work\\MeshGenerator\\data\\test1.obj", points, facets);
 
 	return 0;
